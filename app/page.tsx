@@ -9,7 +9,7 @@ import { Sparkles } from "lucide-react";
 import { GoogleGenAI } from "@google/genai";
 
 export default function Home() {
-  const [step, setStep] = useState<"search" | "results" | "detail">("search");
+  const [step, setStep] = useState<"main" | "detail">("main");
   const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
   const [results, setResults] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -22,17 +22,20 @@ export default function Home() {
     setSearchParams(params);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
+      const ai = new GoogleGenAI({
+        apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+      });
       const { icp, service, state, city } = params;
-      const locationStr = city ? `${city}, ${state}, Brasil` : `${state}, Brasil`;
-      
+      const locationStr = city
+        ? `${city}, ${state}, Brasil`
+        : `${state}, Brasil`;
+
       const prompt = `
         Você é um especialista em prospecção B2B.
         O usuário está procurando por leads com o seguinte Perfil de Cliente Ideal (ICP): "${icp}".
         A localização alvo é: "${locationStr}".
-        O usuário oferece o seguinte serviço: "${service}".
         
-        Use o Google Maps para encontrar cerca de 10 a 15 negócios reais que correspondam a este ICP nesta localização.
+        Use o Google Maps para encontrar cerca de 50 negócios reais que correspondam a este ICP nesta localização.
         
         Para cada negócio encontrado, forneça os seguintes dados em formato JSON estrito (uma array de objetos):
         [
@@ -45,11 +48,11 @@ export default function Home() {
             "rating": 4.5,
             "userRatingCount": 120,
             "primaryType": "Categoria principal",
-            "nationalPhoneNumber": "Telefone se disponível, ou null",
+            "phoneNumbers": "Array de Telefones se disponível, ou []",
             "websiteUri": "Website se disponível, ou null",
             "googleMapsUri": "Link do Google Maps se disponível, ou null",
-            "digitalPainScore": um número de 0 a 100 (onde 100 é a maior oportunidade para vender o serviço. Dê pontos por falta de site, poucas fotos, nota baixa, poucas avaliações, sem telefone, etc),
-            "aiSummary": "Resumo de oportunidade de no máximo 3 linhas em português (pt-BR), explicando por que este negócio é um bom lead para o serviço oferecido."
+            "instagramUri": "Link do Instagram se disponível, ou null",
+            "facebookUri": "Link do Facebook se disponível, ou null"
           }
         ]
         
@@ -66,8 +69,11 @@ export default function Home() {
       });
 
       let text = response.text || "[]";
-      text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      
+      text = text
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
       let searchResults = [];
       try {
         searchResults = JSON.parse(text);
@@ -80,13 +86,15 @@ export default function Home() {
         }
       }
 
-      const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+      const chunks =
+        response.candidates?.[0]?.groundingMetadata?.groundingChunks;
       if (chunks) {
         chunks.forEach((chunk: any) => {
           if (chunk.maps?.uri && chunk.maps?.title) {
-            const matchedResult = searchResults.find((r: any) => 
-              r.name.toLowerCase().includes(chunk.maps.title.toLowerCase()) || 
-              chunk.maps.title.toLowerCase().includes(r.name.toLowerCase())
+            const matchedResult = searchResults.find(
+              (r: any) =>
+                r.name.toLowerCase().includes(chunk.maps.title.toLowerCase()) ||
+                chunk.maps.title.toLowerCase().includes(r.name.toLowerCase()),
             );
             if (matchedResult && !matchedResult.googleMapsUri) {
               matchedResult.googleMapsUri = chunk.maps.uri;
@@ -95,10 +103,13 @@ export default function Home() {
         });
       }
 
-      searchResults.sort((a: any, b: any) => (b.digitalPainScore || 0) - (a.digitalPainScore || 0));
+      searchResults.sort(
+        (a: any, b: any) =>
+          (b.digitalPainScore || 0) - (a.digitalPainScore || 0),
+      );
 
       setResults(searchResults || []);
-      setStep("results");
+      // No longer changing step to "results", staying in "main"
     } catch (err: any) {
       console.error("Search error:", err);
       setError(err.message || "Ocorreu um erro inesperado.");
@@ -109,17 +120,22 @@ export default function Home() {
 
   const handleSelectLead = (lead: Lead) => {
     setSelectedLead(lead);
-    setStep("detail");
+    results.map((r) => {
+      if (r.id === lead.id) {
+        r.selected = !r.selected;
+      }
+    });
+    setResults([...results]);
   };
 
   const handleBackToSearch = () => {
-    setStep("search");
     setResults([]);
     setSelectedLead(null);
+    setStep("main");
   };
 
   const handleBackToResults = () => {
-    setStep("results");
+    setStep("main");
     setSelectedLead(null);
   };
 
@@ -157,19 +173,19 @@ export default function Home() {
           </div>
         )}
 
-        {step === "search" && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {step === "main" && (
+          <div className="space-y-12 animate-in fade-in duration-500">
             <SearchForm onSearch={handleSearch} isLoading={isLoading} />
-          </div>
-        )}
 
-        {step === "results" && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <ResultsList
-              results={results}
-              onSelectLead={handleSelectLead}
-              onBack={handleBackToSearch}
-            />
+            {results.length > 0 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <ResultsList
+                  results={results}
+                  onSelectLead={handleSelectLead}
+                  onBack={() => setResults([])}
+                />
+              </div>
+            )}
           </div>
         )}
 

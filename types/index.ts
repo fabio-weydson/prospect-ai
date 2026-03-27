@@ -8,20 +8,21 @@ export type Lead = {
   userRatingCount: number;
   types: string[];
   primaryType: string;
-  nationalPhoneNumber?: string;
+  phoneNumbers?: string[];
   websiteUri?: string;
+  instagramUri?: string;
+  facebookUri?: string;
   regularOpeningHours?: any;
   photos?: any[];
   reviews?: any[];
   businessStatus?: string;
   googleMapsUri?: string;
-  digitalPainScore: number;
-  aiSummary: string;
+  selected?: boolean;
 };
 
 export type SearchParams = {
   icp: string;
-  service: string;
+  service?: string;
   state: string;
   city: string;
 };

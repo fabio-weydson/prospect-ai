@@ -11,20 +11,23 @@ import {
   Building2,
   ExternalLink,
   Phone,
+  MessageSquare,
+  Instagram,
+  Facebook,
 } from "lucide-react";
+import {
+  isMobileNumber,
+  formatWhatsAppLink,
+  formatPhoneNumber,
+} from "@/lib/phone";
 import { cn } from "@/lib/utils";
 
 interface ResultsListProps {
   results: Lead[];
   onSelectLead: (lead: Lead) => void;
-  onBack: () => void;
 }
 
-export function ResultsList({
-  results,
-  onSelectLead,
-  onBack,
-}: ResultsListProps) {
+export function ResultsList({ results, onSelectLead }: ResultsListProps) {
   const [viewMode, setViewMode] = useState<"card" | "table">(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("prospectai-view-mode");
@@ -40,32 +43,15 @@ export function ResultsList({
     localStorage.setItem("prospectai-view-mode", mode);
   };
 
-  const getScoreColor = (score: number) => {
-    if (score <= 30)
-      return "bg-emerald-100 text-emerald-800 border-emerald-200";
-    if (score <= 60) return "bg-amber-100 text-amber-800 border-amber-200";
-    return "bg-rose-100 text-rose-800 border-rose-200";
-  };
-
-  const getScoreLabel = (score: number) => {
-    if (score <= 30) return "Baixa Oportunidade";
-    if (score <= 60) return "Média Oportunidade";
-    return "Alta Oportunidade";
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="mb-2 -ml-4 text-slate-500"
-          >
-            &larr; Nova Busca
-          </Button>
           <h2 className="text-2xl font-bold text-slate-900">
-            {results.length} Leads Encontrados
+            {results.length} Resultados{" "}
+            <span className="text-slate-500">
+              ({results.filter((r) => r.selected).length} selecionados)
+            </span>
           </h2>
         </div>
 
@@ -109,14 +95,6 @@ export function ResultsList({
                   <h3 className="font-bold text-lg text-slate-900 line-clamp-2">
                     {lead.name}
                   </h3>
-                  <div
-                    className={cn(
-                      "px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap ml-3",
-                      getScoreColor(lead.digitalPainScore),
-                    )}
-                  >
-                    {lead.digitalPainScore} / 100
-                  </div>
                 </div>
 
                 <div className="space-y-2 mb-4 text-sm text-slate-600">
@@ -139,19 +117,38 @@ export function ResultsList({
                       avaliações)
                     </span>
                   </div>
+                  <div className="flex items-center gap-2 min-h-[32px] pt-1">
+                    <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                    {lead.phoneNumbers && lead.phoneNumbers.length > 0 ? (
+                      lead.phoneNumbers.map((phone, index) => (
+                        <div
+                          className="flex items-center gap-2 flex-1 min-w-0"
+                          key={index}
+                        >
+                          <span className="truncate">
+                            {formatPhoneNumber(phone)}
+                          </span>
+                          {isMobileNumber(phone) && (
+                            <a
+                              href={formatWhatsAppLink(phone)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-100 hover:bg-emerald-100 transition-colors shrink-0"
+                            >
+                              <MessageSquare className="w-3 h-3 fill-emerald-700" />
+                              WHATSAPP
+                            </a>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-slate-400 italic">
+                        Não disponível
+                      </span>
+                    )}
+                  </div>
                 </div>
-
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
-                  <p className="text-sm text-slate-700 italic line-clamp-3">
-                    &quot;{lead.aiSummary}&quot;
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-                <Button className="w-full" onClick={() => onSelectLead(lead)}>
-                  Ver Relatório Completo
-                </Button>
               </div>
             </div>
           ))}
@@ -164,16 +161,16 @@ export function ResultsList({
                 <th className="px-6 py-4 font-medium">Nome</th>
                 <th className="px-6 py-4 font-medium">Local</th>
                 <th className="px-6 py-4 font-medium">Avaliação</th>
-                <th className="px-6 py-4 font-medium">Pain Score</th>
                 <th className="px-6 py-4 font-medium">Contato</th>
-                <th className="px-6 py-4 font-medium text-right">Ação</th>
+                {/* <th className="px-6 py-4 font-medium text-right">Ação</th> */}
               </tr>
             </thead>
             <tbody>
               {results.map((lead) => (
                 <tr
                   key={lead.id}
-                  className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                  onClick={() => onSelectLead(lead)}
+                  className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${lead.selected ? "bg-slate-100" : ""}`}
                 >
                   <td
                     className="px-6 py-4 font-medium text-slate-900 max-w-[200px] truncate"
@@ -197,52 +194,92 @@ export function ResultsList({
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div
-                      className={cn(
-                        "inline-flex px-2 py-1 rounded text-xs font-medium border",
-                        getScoreColor(lead.digitalPainScore),
-                      )}
-                    >
-                      {lead.digitalPainScore}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      {lead.nationalPhoneNumber ? (
+                    <div className="flex gap-3">
+                      {lead.googleMapsUri ? (
                         <a
-                          href={`tel:${lead.nationalPhoneNumber}`}
-                          className="text-slate-400 hover:text-blue-600"
-                          title={lead.nationalPhoneNumber}
+                          href={lead.googleMapsUri}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:text-blue-600 transition-colors"
+                          title="Google Maps"
                         >
-                          <Phone className="w-4 h-4" />
+                          <MapPin className="w-4 h-4" />
                         </a>
                       ) : (
-                        <Phone className="w-4 h-4 text-slate-200" />
+                        <MapPin className="w-4 h-4 text-slate-300" />
+                      )}
+                      {lead.phoneNumbers && lead.phoneNumbers.length > 0 ? (
+                        lead.phoneNumbers.map((phone, index) => (
+                          <div key={index} className="flex gap-2">
+                            <a
+                              href={`tel:${phone}`}
+                              className="text-slate-400 hover:text-blue-600 transition-colors"
+                              title={phone}
+                            >
+                              <Phone className="w-4 h-4" />
+                            </a>
+                            {isMobileNumber(phone) && (
+                              <a
+                                href={formatWhatsAppLink(phone)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-emerald-500 hover:text-emerald-700 transition-colors"
+                                title="WhatsApp"
+                              >
+                                <MessageSquare className="w-4 h-4 fill-emerald-500 hover:fill-emerald-700 transition-colors" />
+                              </a>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <Phone className="w-4 h-4 text-slate-300" />
                       )}
                       {lead.websiteUri ? (
                         <a
                           href={lead.websiteUri}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-slate-400 hover:text-blue-600"
+                          className="text-slate-400 hover:text-blue-600 transition-colors"
                           title="Website"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
                       ) : (
-                        <ExternalLink className="w-4 h-4 text-slate-200" />
+                        <ExternalLink className="w-4 h-4 text-slate-300" />
+                      )}
+                      {lead.instagramUri ? (
+                        <a
+                          href={lead.instagramUri}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:text-blue-600 transition-colors"
+                          title="Instagram"
+                        >
+                          <Instagram className="w-4 h-4" />
+                        </a>
+                      ) : (
+                        <Instagram className="w-4 h-4 text-slate-300" />
+                      )}
+                      {lead.facebookUri ? (
+                        <a
+                          href={lead.facebookUri}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-400 hover:text-blue-600 transition-colors"
+                          title="Facebook"
+                        >
+                          <Facebook className="w-4 h-4" />
+                        </a>
+                      ) : (
+                        <Facebook className="w-4 h-4 text-slate-300" />
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onSelectLead(lead)}
-                    >
-                      Relatório
+                  {/* <td className="px-6 py-4 text-right">
+                    <Button variant="outline" size="sm">
+                      Mensagem
                     </Button>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

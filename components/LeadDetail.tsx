@@ -34,8 +34,10 @@ export function LeadDetail({ lead, searchParams, onBack }: LeadDetailProps) {
     const fetchReport = async () => {
       try {
         setIsLoading(true);
-        const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
-        
+        const ai = new GoogleGenAI({
+          apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+        });
+
         const reportPrompt = `
           Você é um consultor de vendas B2B especialista em IA.
           O usuário está tentando vender o seguinte serviço: "${searchParams.service}".
@@ -44,12 +46,12 @@ export function LeadDetail({ lead, searchParams, onBack }: LeadDetailProps) {
           Nome: ${lead.name}
           Endereço: ${lead.address}
           Avaliação: ${lead.rating} (${lead.userRatingCount} avaliações)
-          Website: ${lead.websiteUri ? 'Sim' : 'Não'}
-          Telefone: ${lead.nationalPhoneNumber ? 'Sim' : 'Não'}
-          Tipos: ${lead.types?.join(', ')}
+          Website: ${lead.websiteUri ? "Sim" : "Não"}
+          Telefone: ${lead.phoneNumbers.length > 0 ? "Sim" : "Não"}
+          Tipos: ${lead.types?.join(", ")}
           
           Avaliações recentes:
-          ${lead.reviews?.map((r: any) => `- ${r.rating} estrelas: "${r.text?.text}"`).join('\n') || 'Nenhuma avaliação detalhada disponível.'}
+          ${lead.reviews?.map((r: any) => `- ${r.rating} estrelas: "${r.text?.text}"`).join("\n") || "Nenhuma avaliação detalhada disponível."}
           
           Gere um relatório de oportunidade de vendas completo em formato Markdown (pt-BR).
           O relatório DEVE conter as seguintes seções (use headers h2 ##):
@@ -79,7 +81,8 @@ export function LeadDetail({ lead, searchParams, onBack }: LeadDetailProps) {
       } catch (err: any) {
         console.error("Report error:", err);
         setError(
-          err.message || "Ocorreu um erro ao gerar o relatório de IA. Tente novamente.",
+          err.message ||
+            "Ocorreu um erro ao gerar o relatório de IA. Tente novamente.",
         );
       } finally {
         setIsLoading(false);
