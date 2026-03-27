@@ -95,6 +95,7 @@ npm start
 - [ ] **Advanced Data Enrichment**: Fetch LinkedIn profiles and detailed company financial data.
 - [ ] **Collaboration Tools**: Share lead lists and notes with your sales team.
 - [ ] **Custom AI Agents**: Train specialized agents for different prospecting niches.
+- [ ] **Whatsapp Integration**: Send messages directly to leads via WhatsApp.
 
 ---
 

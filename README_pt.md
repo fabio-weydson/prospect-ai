@@ -9,6 +9,7 @@ O ProspectAI é uma aplicação web moderna projetada para otimizar o processo d
 ## 🌟 Sobre
 
 O ProspectAI transforma a maneira como as empresas encontram novos clientes. Basta descrever seu público-alvo (ICP) e localização, e nosso motor impulsionado por IA irá:
+
 - Escanear o Google Maps em busca de negócios relevantes.
 - Extrair informações de contato essenciais (Telefone, Website, Redes Sociais).
 - Fornecer um painel centralizado para gestão e qualificação de leads.
@@ -41,27 +42,30 @@ O ProspectAI transforma a maneira como as empresas encontram novos clientes. Bas
 ## ⚙️ Configuração
 
 ### Pré-requisitos
+
 - Node.js 18+ instalado.
 - Uma [Chave de API do Google AI Studio](https://aistudio.google.com/app/apikey).
 
 ### Instalação
 
 1. **Clone o repositório**:
-    ```bash
-    git clone https://github.com/jcarlosamorim/ProspectAI.git
-    cd ProspectAI
-    ```
+
+   ```bash
+   git clone https://github.com/jcarlosamorim/ProspectAI.git
+   cd ProspectAI
+   ```
 
 2. **Instale as dependências**:
-    ```bash
-    npm install
-    ```
+
+   ```bash
+   npm install
+   ```
 
 3. **Configure as Variáveis de Ambiente**:
-    Crie um arquivo `.env.local` na raiz do projeto e adicione sua chave de API do Gemini:
-    ```env
-    NEXT_PUBLIC_GEMINI_API_KEY=sua_chave_api_aqui
-    ```
+   Crie um arquivo `.env.local` na raiz do projeto e adicione sua chave de API do Gemini:
+   ```env
+   NEXT_PUBLIC_GEMINI_API_KEY=sua_chave_api_aqui
+   ```
 
 ---
 
@@ -91,6 +95,7 @@ npm start
 - [ ] **Enriquecimento Avançado de Dados**: Busca de perfis no LinkedIn e dados financeiros detalhados das empresas.
 - [ ] **Ferramentas de Colaboração**: Compartilhamento de listas de leads e notas com sua equipe de vendas.
 - [ ] **Agentes de IA Personalizados**: Treine agentes especializados para diferentes nichos de prospecção.
+- [ ] **Integração com WhatsApp**: Envio de mensagens diretamente para leads via WhatsApp.
 
 ---
 
