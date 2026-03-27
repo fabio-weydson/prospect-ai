@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { SearchForm } from "@/components/SearchForm";
 import { ResultsList } from "@/components/ResultsList";
-import { LeadDetail } from "@/components/LeadDetail";
 import { Lead, SearchParams } from "@/types";
 import { Sparkles } from "lucide-react";
 import { GoogleGenAI } from "@google/genai";
@@ -182,20 +181,9 @@ export default function Home() {
                 <ResultsList
                   results={results}
                   onSelectLead={handleSelectLead}
-                  onBack={() => setResults([])}
                 />
               </div>
             )}
-          </div>
-        )}
-
-        {step === "detail" && selectedLead && searchParams && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <LeadDetail
-              lead={selectedLead}
-              searchParams={searchParams}
-              onBack={handleBackToResults}
-            />
           </div>
         )}
       </main>
